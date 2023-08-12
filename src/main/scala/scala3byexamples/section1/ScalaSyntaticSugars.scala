@@ -1,4 +1,4 @@
-package scala3byexamples.section1as
+package scala3byexamples.section1
 
 import scala.util.Try
 
