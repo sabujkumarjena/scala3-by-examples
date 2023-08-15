@@ -1,7 +1,7 @@
 package scala3byexamples.section3
 
 import java.util.concurrent.Executors
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.util.{Failure, Random, Success, Try}
 import scala.concurrent.duration.*
 object Futures {
@@ -178,12 +178,41 @@ object Futures {
     }
   }
 
-  def main(args: Array[String]): Unit = {
+  /*
+  Promises
+   */
+  def demoPromise(): Unit = {
+    val promise = Promise[Int]()
+    val futureInside: Future[Int] = promise.future
 
-    sendMessageToBestFriend_v3("id1", "hello")
-    println("purchasing...")
-    println(BankingApp.purchase("sabuj", "iPhone","Apple", 786.5))
-    println("purchase complete")
+    // thread 1 - "consumer" : monitor the future for completion
+
+    futureInside.onComplete {
+      case Success(value) =>
+        println(s" [consumer] I have been completed with $value")
+
+      case Failure(ex) => ex.printStackTrace()
+    }
+
+    // thread 2 - "producer"
+
+    val producerThread = new Thread(() => {
+      println("[producer] Crunching numbers..")
+      Thread.sleep(1000)
+      // "fulfil" the promise
+      promise.success(42)
+      println(" [producer] I am done")
+    })
+
+    producerThread.start()
+  }
+
+  def main(args: Array[String]): Unit = {
+    demoPromise()
+//    sendMessageToBestFriend_v3("id1", "hello")
+//    println("purchasing...")
+//    println(BankingApp.purchase("sabuj", "iPhone", "Apple", 786.5))
+//    println("purchase complete")
     // println(futureInstantResult)
     Thread.sleep(3000)
     executor.shutdown()
