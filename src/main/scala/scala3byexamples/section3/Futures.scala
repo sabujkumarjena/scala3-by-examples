@@ -207,8 +207,81 @@ object Futures {
     producerThread.start()
   }
 
+  /** Exercises 1) fulfil a future IMMEDIATELY with a value 2)in sequence: make
+    * sure first Future has been completed before returning the second 3)
+    * first(fa, fb) => new Future with the value of the first Future to complete
+    * 4) last(fa, fb) => new Future with the value of the last Future to
+    * complete 5) retry an action returning a Future until a predicate holds
+    * true
+    */
+
+  // 1
+  def completeImmediately[A](value: A): Future[A] = Future(
+    value
+  ) // async completion as soon as possible
+  def completeImmediately_v2[A](value: A): Future[A] =
+    Future.successful(value) // synchronous  completion
+  // 2
+  def inSequence[A, B](first: Future[A], second: Future[B]): Future[B] =
+    first.flatMap(_ => second)
+
+  // 3
+  def firstFuture[A](f1: Future[A], f2: Future[A]): Future[A] = {
+    val promise = Promise[A]()
+    f1.onComplete(result1 => promise.tryComplete(result1))
+    f2.onComplete(result2 => promise.tryComplete(result2))
+    promise.future
+  }
+
+  // 4
+  def last[A](f1: Future[A], f2: Future[A]): Future[A] = {
+    val bothPromise = Promise[A]()
+    val lastPromise = Promise[A]()
+
+    f1.onComplete(result =>
+      if (!bothPromise.tryComplete(result)) lastPromise.tryComplete(result)
+    )
+    f2.onComplete(result =>
+      if (!bothPromise.tryComplete(result)) lastPromise.tryComplete(result)
+    )
+    lastPromise.future
+  }
+
+  // 5
+  def retryUntil[A](
+      action: () => Future[A],
+      predicate: A => Boolean
+  ): Future[A] = action().filter(predicate).recoverWith { case _ =>
+    retryUntil(action, predicate)
+  }
+
+  def testRetries(): Unit = {
+    val random = new Random()
+    val action = () =>
+      Future {
+        Thread.sleep(100)
+        val nextVal = random.nextInt(100)
+        println(s"generated $nextVal")
+        nextVal
+      }
+
+    val predicate = (n: Int) => n % 3 == 0
+    retryUntil(action, predicate).foreach(finalResult =>
+      println(s"Settled at $finalResult")
+    )
+  }
   def main(args: Array[String]): Unit = {
-    demoPromise()
+    testRetries()
+    lazy val first = Future {
+      Thread.sleep(1000)
+      1
+    }
+    lazy val second = Future {
+      Thread.sleep(100)
+      2
+    }
+    // println(Await.result(last(first, second), 2.seconds))
+    // demoPromise()
 //    sendMessageToBestFriend_v3("id1", "hello")
 //    println("purchasing...")
 //    println(BankingApp.purchase("sabuj", "iPhone", "Apple", 786.5))
