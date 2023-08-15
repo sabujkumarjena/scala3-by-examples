@@ -1,9 +1,9 @@
 package scala3byexamples.section3
 
 import java.util.concurrent.Executors
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Random, Success, Try}
-
+import scala.concurrent.duration.*
 object Futures {
 
   def longComputation(): Int = {
@@ -123,9 +123,67 @@ object Futures {
     .fetchProfile("unknown id")
     .fallbackTo(SocialNetwork.fetchProfile("dummy-id"))
 
+  /*
+  Block for a future
+   */
+
+  case class User(name: String)
+  case class Transaction(
+      sender: String,
+      receiver: String,
+      amount: Double,
+      status: String
+  )
+
+  object BankingApp {
+    // "APIs"
+
+    def fetchUser(name: String): Future[User] = Future {
+      // simulate database
+      Thread.sleep(500)
+      User(name)
+    }
+
+    def createTransaction(
+        user: User,
+        mechantName: String,
+        amount: Double
+    ): Future[Transaction] = Future {
+      // simulate payment
+      Thread.sleep(1000)
+      Transaction(user.name, mechantName, amount, "SUCCESS")
+    }
+
+    // external api //synchrounous not best design
+    def purchase(
+        userName: String,
+        item: String,
+        merchantName: String,
+        price: Double
+    ): String = {
+      /*
+      1. fetch user
+      2. create transaction
+      3.WAIT for the txn to finish
+       */
+      val transactionStatusFuture: Future[String] = for {
+        user <- fetchUser(userName)
+        transaction <- createTransaction(user, merchantName, price)
+      } yield transaction.status
+
+      // blocking call
+      Await.result(transactionStatusFuture, 2.seconds)
+      // throws TimeoutException if the future doesn't finish within 2s
+
+    }
+  }
+
   def main(args: Array[String]): Unit = {
 
     sendMessageToBestFriend_v3("id1", "hello")
+    println("purchasing...")
+    println(BankingApp.purchase("sabuj", "iPhone","Apple", 786.5))
+    println("purchase complete")
     // println(futureInstantResult)
     Thread.sleep(3000)
     executor.shutdown()
