@@ -87,8 +87,28 @@ object Givens {
   val myCombinator = new Combinator[Int] {
     override def combine(x: Int, y: Int) = x * y
   }
-  val listProduct = combineAll(List(2,3,4,5))(using myCombinator)
+  val listProduct = combineAll(List(2, 3, 4, 5))(using myCombinator)
+
+  /** Exercises: 1 - create a given for ordering Option[A] if you can order A 2
+    * \- create a smmoning method that fetches the given value of your
+    * particular
+    */
+//1-
+  given optionOrdering[A](using Ordering[A]): Ordering[Option[A]] with {
+    override def compare(x: Option[A], y: Option[A]): Int = (x, y) match {
+      case (None, None)       => 0
+      case (None, Some(_))    => -1
+      case (Some(_), None)    => 1
+      case (Some(a), Some(b)) => summonCustom[Ordering[A]].compare(a, b) //use sommon from library
+    }
+  }
+
+  // 2 -
+  def summonCustom[A](using a: A): A = a
+
   def main(args: Array[String]): Unit = {
+
+    println(List(Option(3), Option.empty, Option(2), Option(1)).sorted)
     println(listProduct)
     println(nestedListsOrdered)
     println(gruopedSum)
