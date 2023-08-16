@@ -1,5 +1,12 @@
 package scala3byexamples.section4
 
+/* Uses for givens:
+- changing program behavior depending on context, i.e. contextual abstractions
+- type classes
+- automatic dependency injection
+- type-level programming
+ */
+
 object Givens {
 
   // custom sorting
