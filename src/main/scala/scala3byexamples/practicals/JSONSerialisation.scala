@@ -61,17 +61,17 @@ object JSONSerialisation {
   given userConverter: JSONConverter[User] with
     override def convert(value: User): JSONValue = JSONObject(
       Map(
-        "name" -> stringConverter.convert(value.name),
-        "age" -> intConverter.convert(value.age),
-        "email" -> stringConverter.convert(value.email)
+        "name" -> JSONConverter[String].convert(value.name),
+        "age" -> JSONConverter[Int].convert(value.age),
+        "email" -> JSONConverter[String].convert(value.email)
       )
     )
 
   given postConverter: JSONConverter[Post] with
     override def convert(value: Post): JSONValue = JSONObject(
       Map(
-        "content" -> stringConverter.convert(value.content),
-        "createdAt" -> dateConverter.convert(value.createdAt)
+        "content" -> JSONConverter[String].convert(value.content),
+        "createdAt" -> JSONConverter[Date].convert(value.createdAt)
       )
     )
 
