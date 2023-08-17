@@ -69,6 +69,8 @@ object Implicits {
     - conversions are easy to abuse
     - implicits are very hard to track down while debugging (givens also not trivial, but they are explicitly imported
    */
+
+  /// organising implicits == organising contextul abstractions
   def main(args: Array[String]): Unit = {
     println(sumOf10)
     println(is25Even)
