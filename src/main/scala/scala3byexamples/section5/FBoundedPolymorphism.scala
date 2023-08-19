@@ -47,7 +47,7 @@ object FBoundedPolymorphism {
     }
     // mess up FBP
     class Crocodile extends Animal[Dog] {
-      override def breed: List[Animal[Dog]] = ??? // list of dogs
+      override def breed: List[Animal[Dog]] = List(new Dog) // list of dogs
     }
   }
 
@@ -56,7 +56,7 @@ object FBoundedPolymorphism {
   // example: Java sorting library
 
   class Person extends Comparable[Person] { // FBP
-    override def compareTo(o: Person): Int = ???
+    override def compareTo(o: Person): Int = 0
   }
 
   // FBP + self types
