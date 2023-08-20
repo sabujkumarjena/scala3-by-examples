@@ -105,6 +105,12 @@ object HigherKindedTypes {
         b <- fB
       } yield ((a, b))
 
+    def combine_v4[F[_]: Monad, A, B](fA: F[A], fB: F[B]): F[(A, B)] = //context bound
+      for {
+        a <- fA
+        b <- fB
+      } yield ((a, b))
+
     def combineList[A, B](listA: List[A], listB: List[B]): List[(A, B)] =
       for {
         a <- listA
@@ -128,7 +134,7 @@ object HigherKindedTypes {
     println(do10x(Option(3)))
     println(do10x_v2(List(1, 2, 3)))
     println(do10x_v3(List(1, 2, 3)))
-    println(Test.combine_v3(List(1,2,3), List("sabuj", "Sagar")))
+    println(Test.combine_v3(List(1, 2, 3), List("sabuj", "Sagar")))
   }
 
 }
